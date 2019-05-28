@@ -3,6 +3,8 @@ library(h2o)
 
 # запускаем кластер H2O
 h2o.init(nthreads = -1, max_mem_size = "8G")
+
+# задаем рабочий каталог
 setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Data")
 
 # загружаем данные
@@ -55,3 +57,6 @@ forest_model
 # зависимой переменной
 predictions <- h2o.predict(forest_model, newdata = tst)
 predictions
+
+# завершаем работу с H2O
+h2o.shutdown(prompt = TRUE)
