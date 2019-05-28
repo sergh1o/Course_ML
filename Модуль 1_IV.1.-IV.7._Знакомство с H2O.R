@@ -51,7 +51,7 @@ forest_model <- h2o.randomForest(x = predictors,
 forest_model
 
 # вычисляем спрогнозированные значения и 
-# спрогнозированные вероятности классы 
+# спрогнозированные вероятности классов 
 # зависимой переменной
 predictions <- h2o.predict(forest_model, newdata = tst)
 predictions
