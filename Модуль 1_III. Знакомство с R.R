@@ -2,9 +2,24 @@
 setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Data")
 
 # загружаем данные
-data <- read.csv2("StateFarm.csv", 
+data <- read.csv2("StateFarm_missing.csv", 
                   sep = ";", 
                   na.strings = "")
+# выводим первые 5 наблюдений
+head(data, 5)
+
+# смотрим типы переменных
+str(data)
+
+# выполняем необходимые преобразования
+# преобразовываем в числовой вектор
+data$Customer.Lifetime.Value <- as.numeric(
+  levels(data$Customer.Lifetime.Value)[data$Customer.Lifetime.Value])
+data$Response <- as.factor(data$Response)
+
+# смотрим типы переменных и данные
+str(data)
+head(data, 5)
 
 # разбиваем данные на обучающие и тестовые
 set.seed(100)
@@ -14,8 +29,35 @@ ind <- sample(2, nrow(data),
 development <- data[ind == 1, ]
 holdout <- data[ind == 2, ]
 
+# смотрим пропуски в обучающей выборке
+sapply(development, function(x) sum(is.na(x)))
+
+# смотрим пропуски в тестовой выборке
+sapply(holdout, function(x) sum(is.na(x)))
+
+# устанавливаем пакет imputeMissings 
+# install.packages("imputeMissings") 
+
+# загружаем пакет imputeMissings 
+library(imputeMissings)
+
 # устанавливаем пакет rpart
 # install.packages("rpart")
+
+# вычисляем медианы и моды, т.е. обучаем модель импутации
+values <- compute(development)
+# применяем модель импутации к обучающему набору: пропуски в обучающем 
+# наборе заменяем модами и медианами, вычисленными на обучающем наборе 
+development <- impute(development, object = values)
+# применяем модель импутации к тестовому набору: пропуски в тестовом 
+# наборе заменяем модами и медианами, вычисленными на обучающем наборе 
+holdout <- impute(holdout, object = values)
+
+# смотрим пропуски в обучающей выборке
+sapply(development, function(x) sum(is.na(x)))
+
+# смотрим пропуски в тестовой выборке
+sapply(holdout, function(x) sum(is.na(x)))
 
 # загружаем пакет rpart
 library(rpart)

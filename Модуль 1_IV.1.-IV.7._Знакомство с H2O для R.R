@@ -11,6 +11,7 @@ setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Data")
 data <- read.csv2("StateFarm_for_H2O.csv", 
                   sep = ";", 
                   na.strings = "")
+head(data, 3)
 
 # разбиваем данные на обучающие и тестовые
 set.seed(100)
