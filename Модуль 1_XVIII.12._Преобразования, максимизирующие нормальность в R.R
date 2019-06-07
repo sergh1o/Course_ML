@@ -42,6 +42,11 @@ results <- c(skew, kurt)
 names(results) <- c("скос", "эксцесс")
 results
 
+# приравняем возможные отрицательные значения к нулю
+development$PERSONAL_INCOME <- ifelse(development$PERSONAL_INCOME < 0, 
+                                      0, 
+                                      development$PERSONAL_INCOME)
+
 # выполняем обратное преобразование переменной PERSONAL_INCOME, 
 # используем константу, чтобы не брать нулевые значения
 a <- 0.001
