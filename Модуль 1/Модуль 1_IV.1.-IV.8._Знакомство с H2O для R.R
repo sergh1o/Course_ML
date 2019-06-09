@@ -5,7 +5,7 @@ library(h2o)
 h2o.init(nthreads = -1, max_mem_size = "8G")
 
 # задаем рабочий каталог
-setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Data")
+setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Модуль 1/Data")
 
 # загружаем данные
 data <- read.csv2("StateFarm_for_H2O.csv", 
