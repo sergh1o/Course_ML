@@ -1,5 +1,5 @@
 # задаем рабочий каталог
-setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Модуль 1/Data")
+setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Модуль_1/Data")
 
 # загружаем данные
 data <- read.csv2("StateFarm_missing.csv", 
