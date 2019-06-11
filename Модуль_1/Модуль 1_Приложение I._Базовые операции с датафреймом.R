@@ -1,5 +1,5 @@
 # задаем рабочий каталог
-setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Data")
+setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Модуль_1/Data")
 
 # считываем CSV-файл в датафрейм data
 data <- read.csv2("Example.csv", sep = ";", na.strings = "")

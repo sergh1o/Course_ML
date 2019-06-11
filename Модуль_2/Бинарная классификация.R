@@ -1,8 +1,8 @@
 # задаем рабочий каталог
-setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Модуль 2/Data")
+setwd("/Users/artemgruzdev/Documents/Курс/Course_ML/Модуль_2/Data")
 
 # считываем CSV-файл в датафрейм data
-data <- read.csv2("results.csv")
+data <- read.csv2("results.csv", dec = ".")
 # взглянем на первые 5 наблюдений
 head(data, 5)
 
@@ -52,3 +52,12 @@ output
 # вычисляем F1-меру
 F1_score = 2*((Precision * Sensitivity)/(Precision + Sensitivity))
 F1_score
+
+# снижаем пороговое значение спрогнозированной
+# вероятности положительного класса до 0.3
+table(data$fact == 1, data$probability >= 0.30)
+
+# повышаем пороговое значение спрогнозированной
+# вероятности положительного класса до 0.7
+table(data$fact == 1, data$probability >= 0.70)
+
