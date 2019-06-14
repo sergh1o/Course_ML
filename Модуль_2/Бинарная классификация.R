@@ -34,19 +34,32 @@ Kappa.test(data$fact, data$predict)
 
 # вычисляем чувствительность
 Sensitivity <- confusion[2,2] / (confusion[2,2] + confusion[2,1])
+# печатаем значение чувствительности 
+output <- c("Чувствительность" = Sensitivity)
+output
+
 # вычисляем специфичность
 Specificity <- confusion[1,1] / (confusion[1,1] + confusion[1,2])
+# печатаем значение специфичности 
+output <- c("Специфичность" = Specificity)
+output
+
 # вычисляем 1 - специфичность
 One_minus_specificity = 1 - Specificity
+# печатаем значение 1 - специфичности
+output <- c("1 - специфичность" = One_minus_specificity)
+output
+
 # вычисляем точность
 Precision <- confusion[2,2] / (confusion[2,2] + confusion[1,2])
+# печатаем значение точности
+output <- c("Точность" = Precision)
+output
 
-# печатаем значения чувствительности, специфичности,
-# 1 минус специфичности и точности
-output <- c("Чувствительность" = Sensitivity, 
-            "Специфичность" = Specificity, 
-            "1 - специфичность" = One_minus_specificity,
-            "Точность" = Precision)
+# вычисляем сбалансированную правильность
+Bal_accuracy <- (Sensitivity + Specificity) / 2
+# печатаем значение сбалансированной правильности
+output <- c("Сбалансированная правильность" = Bal_accuracy)
 output
 
 # вычисляем F1-меру
