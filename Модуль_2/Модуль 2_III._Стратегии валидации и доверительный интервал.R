@@ -39,94 +39,6 @@ cm <- as.matrix(table(holdout$default, predvalues_hold))
 accuracy_hold <- sum(diag(cm)) / sum(cm) 
 accuracy_hold
 
-# считываем CSV-файл в датафрейм data
-timeseries_data <- read.csv2("Flats.csv")
-# выводим первые 5 наблюдений датафрейма
-head(timeseries_data, 5)
-
-# преобразовываем в формат даты
-timeseries_data$Date_Create <- as.POSIXct(timeseries_data$Date_Create, 
-                                          format="%d.%m.%Y")
-# сортируем данные по дате сделки
-# (от самой ранней к самой поздней)
-timeseries_data = timeseries_data[order(timeseries_data$Date_Create), ]
-timeseries_data
-
-# разбиваем данные на обучающую и тестовую выборки
-timeseries_train = timeseries_data[1:14, ]
-timeseries_test = timeseries_data[15:20, ]
-
-# а еще можно так
-# sampleSizeTrain <- floor(0.70 * nrow(timeseries_data))
-# train <- timeseries_data[1:sampleSizeTrain, ]
-# test <- timeseries_data[(sampleSizeTrain+1):nrow(timeseries_data), ]
-
-# смотрим обучающую выборку
-timeseries_train
-
-# смотрим тестовую выборку
-timeseries_test
-
-# считываем CSV-файл в датафрейм data
-mfo_data <- read.csv2("MFOCredit.csv")
-# выводим первые 5 наблюдений датафрейма
-head(mfo_data, 5)
-
-# установим пакет anytime
-# install.packages("anytime")
-# загрузим пакет anytime
-library(anytime)
-
-# преобразовываем в формат даты с помощью функции
-# anytime() пакета anytime
-mfo_data$date_start <- anytime(mfo_data$date_start)
-# выводим первые 5 наблюдений датафрейма
-head(mfo_data, 5)
-
-# сортируем данные по дате сделки
-# (от самой ранней к самой поздней)
-mfo_data = mfo_data[order(mfo_data$date_start), ]
-mfo_data
-
-# удаляем date_start
-mfo_data = mfo_data[, -1]
-
-# выполняем разбиение на обучающую и тестовую выборки,
-# учитывающее временную структуру
-sampleSizeTrain <- floor(0.70 * nrow(mfo_data))
-tr <- mfo_data[1:sampleSizeTrain, ]
-tst <- mfo_data[(sampleSizeTrain+1):nrow(mfo_data), ]
-
-# строим модель дерева классификации
-set.seed(42)
-model <- rpart(delinq60plus ~ ., method = "class", data = tr)
-
-# вычисляем правильность на тестовой выборке
-predval_tst <- predict(model, tst, type = "class")
-cm <- as.matrix(table(tst$delinq60plus, predval_tst))
-acc_tst <- sum(diag(cm)) / sum(cm) 
-output <- c("Правильность на тестовой выборке" = acc_tst)
-output
-
-# выполняем случайное разбиение на 
-# обучающую и тестовую выборки
-set.seed(100)
-ind <- sample(2, nrow(mfo_data), replace = TRUE, prob = c(0.7, 0.3))
-training <- mfo_data[ind == 1, ]
-testing <- mfo_data[ind == 2, ]
-
-# строим модель дерева классификации
-set.seed(42)
-model <- rpart(delinq60plus ~ ., method = "class", data = training)
-
-# вычисляем правильность на тестовой выборке
-predval_testing <- predict(model, testing, type = "class")
-cm <- as.matrix(table(testing$delinq60plus, predval_testing))
-acc_testing <- sum(diag(cm)) / sum(cm) 
-acc_testing
-output <- c("Правильность на тестовой выборке" = acc_testing)
-output
-
 # загружаем необходимые пакеты
 library(caret)
 library(randomForest)
@@ -171,6 +83,43 @@ model <- train(x = x,
                tuneGrid=data.frame(mtry = floor(sqrt(ncol(x)))))
 print(model)
 
+# задаем стратегию проверки
+set.seed(42)
+train_control <- trainControl(method = "LGOCV", p=0.7)
+model <- train(x = x, 
+               y = y, 
+               method = "rf",
+               trControl = train_control,
+               tuneGrid=data.frame(mtry = floor(sqrt(ncol(x)))))
+print(model)
+
+
+# еще вариант
+
+# сюда будем записывать значения правильности
+acc <- numeric(10)
+
+# выполняем 10-кратное случайное разбиение
+# на обучающую  и тестовую выборки
+set.seed(42)
+for (i in 1:10) {
+  random_number <- runif(nrow(data), 0, 1)
+  development <- data[random_number > 0.3, ]
+  holdout <- data[random_number <= 0.3, ]
+  model <- rpart(default ~ ., method = "class", data = development)
+  actual <- holdout$default
+  predicted <- predict(model, holdout, type = "class")
+  cm <- as.matrix(table(actual, predicted))
+  n <- sum(cm)
+  diag <- diag(cm)
+  accuracy <- sum(diag) / n 
+  acc[i] <- accuracy
+}
+# печатаем значения правильности
+acc
+# печатаем среднее значение правильности
+mean_acc <- c("Среднее значение правильности" = mean(acc))
+mean_acc
 
 # задаем стратегию проверки, для уменьшения
 # времени вычислений сократим количество
@@ -249,13 +198,79 @@ roc(holdout$default, prob[, 2], ci = TRUE)
 # в обучении и настройке гиперпараметров
 plot(roc(holdout$default, prob[, 2], ci = TRUE))
 
+# считываем CSV-файл в датафрейм data
+timeseries_data <- read.csv2("Flats.csv")
+# выводим первые 5 наблюдений датафрейма
+head(timeseries_data, 5)
+
+# преобразовываем в формат даты
+timeseries_data$Date_Create <- as.POSIXct(timeseries_data$Date_Create, 
+                                          format="%d.%m.%Y")
+# сортируем данные по дате сделки
+# (от самой ранней к самой поздней)
+timeseries_data = timeseries_data[order(timeseries_data$Date_Create), ]
+timeseries_data
+
+# разбиваем данные на обучающую и тестовую выборки
+sampleSizeTrain <- floor(0.70 * nrow(timeseries_data))
+timeseries_train <- timeseries_data[1:sampleSizeTrain, ]
+timeseries_test <- timeseries_data[(sampleSizeTrain+1):nrow(timeseries_data), ]
+
+# смотрим обучающую выборку
+timeseries_train
+
+# смотрим тестовую выборку
+timeseries_test
+
+# считываем CSV-файл в датафрейм
+wellsfargo_data <- read.csv2("wellsfargo.csv")
+# выводим первые 5 наблюдений датафрейма
+head(wellsfargo_data, 5)
+
+# преобразовываем в формат даты
+wellsfargo_data$date <- as.Date(wellsfargo_data$date)
+# преобразовываем в фактор
+wellsfargo_data$response <- as.factor(wellsfargo_data$response)
+
+# сортируем данные по дате
+# (от самой ранней к самой поздней)
+wellsfargo_data <- wellsfargo_data[order(wellsfargo_data$date), ]
+wellsfargo_data
+
+# удаляем date
+wellsfargo_data <- wellsfargo_data[, -1]
+
+# выполняем разбиение на обучающую и тестовую выборки, 
+# учитывающее временную структуру
+sampleSizeTrain <- floor(0.70 * nrow(wellsfargo_data))
+tr <- wellsfargo_data[1:sampleSizeTrain, ]
+tst <- wellsfargo_data[(sampleSizeTrain+1):nrow(wellsfargo_data), ]
+
+# строим модель дерева классификации
+set.seed(42)
+model <- rpart(response ~ ., method = "class", data = tr)
+
+# загружаем пакет ROCR
+library(ROCR)
+
+# вычисляем AUC на обучающей и тестовой выборках
+prob_tr <- predict(model, tr, type = "prob")
+pred_tr <- prediction(prob_tr[, 2], tr$response)
+prob_tst <- predict(model, tst, type = "prob")
+pred_tst <- prediction(prob_tst[, 2], tst$response)
+auc_tr <- performance(pred_tr,"auc")@y.values[[1]]
+auc_tst <- performance(pred_tst,"auc")@y.values[[1]]
+output <- c("AUC на обучающей выборке" = auc_tr,
+            "AUC на тестовой выборке" = auc_tst)
+output
+
 # пишем функцию, вычисляющую правильность
 accuracy <- function(model){
-  actual <- holdout$default
+  actual <- holdout$response
   predicted <- predict(model, holdout, type = "class")
   cm <- as.matrix(table(actual, predicted))
-  n <- sum(cm) # количество наблюдений
-  diag <- diag(cm) # количество правильно классифицированных
+  n <- sum(cm)
+  diag <- diag(cm)
   accuracy <- sum(diag) / n 
   return(accuracy)
 }
